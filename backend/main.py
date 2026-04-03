@@ -27,12 +27,17 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 # CORS — allow the React dev server (and production origin) to call the API
 # ---------------------------------------------------------------------------
-ALLOWED_ORIGINS = [
+_DEFAULT_ORIGINS = [
     "http://localhost:5173",   # Vite default dev port
     "http://localhost:3000",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
 ]
+
+# In production, set ALLOWED_ORIGINS env var to your frontend URL(s),
+# comma-separated.  e.g.  "https://ai-resume-parser.vercel.app"
+_extra = os.getenv("ALLOWED_ORIGINS", "")
+ALLOWED_ORIGINS = _DEFAULT_ORIGINS + [o.strip() for o in _extra.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,

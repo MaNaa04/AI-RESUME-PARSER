@@ -1,33 +1,27 @@
 export default function SkillsCard({ skills }) {
   if (!skills || skills.length === 0) {
     return (
-      <div className="glass-card p-6">
-        <h2 className="section-title">
-          <span>🛠️</span>
-          <span className="gradient-text">Skills & Technologies</span>
-        </h2>
-        <p className="text-slate-400 text-sm">No skills found in this resume.</p>
+      <div className="card" id="skills-card">
+        <h3 className="card-title">Skills & Technologies</h3>
+        <p style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>No skills found in this resume.</p>
       </div>
     )
   }
 
   return (
-    <div id="skills-card" className="glass-card p-6 animate-slide-up">
-      <h2 className="section-title">
-        <span>🛠️</span>
-        <span className="gradient-text">Skills & Technologies</span>
-        <span className="ml-auto text-xs text-slate-400 font-normal bg-white/5 px-2 py-1 rounded-full">
-          {skills.length} found
-        </span>
-      </h2>
+    <div className="card animate-slide-up" id="skills-card">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="card-title" style={{ marginBottom: 0 }}>Skills & Technologies</h3>
+        <span className="count-badge">{skills.length} found</span>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {skills.map((skill, index) => (
           <span
             key={index}
             id={`skill-badge-${index}`}
-            className="skill-badge cursor-default"
-            style={{ animationDelay: `${index * 30}ms` }}
+            className="skill-tag"
+            style={{ animationDelay: `${index * 20}ms` }}
           >
             {skill}
           </span>

@@ -1,0 +1,45 @@
+# =============================================================================
+# render.yaml — Render Blueprint (Infrastructure as Code)
+# Deploys the AI Resume Parser FastAPI backend as a Web Service.
+# Docs: https://docs.render.com/blueprint-spec
+# =============================================================================
+
+services:
+  - type: web
+    name: ai-resumer-parser-app
+    runtime: python
+    plan: free
+
+    # ── Repo / Branch ──────────────────────────────────────────────────────
+    # Render auto-detects the connected repo. These settings control which
+    # branch triggers auto-deploy and where the backend code lives.
+    branch: main
+    autoDeploy: true
+
+    # ── Paths ──────────────────────────────────────────────────────────────
+    # Root directory of the backend within the monorepo.
+    rootDir: backend
+
+    # ── Build ──────────────────────────────────────────────────────────────
+    buildCommand: pip install -r requirements.txt
+
+    # ── Start ──────────────────────────────────────────────────────────────
+    # Render injects the PORT env var; uvicorn must bind to 0.0.0.0:$PORT.
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+    # ── Python Version ─────────────────────────────────────────────────────
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.5"
+
+      # Gemini API key — value set manually in the Render dashboard.
+      - key: GEMINI_API_KEY
+        sync: false                 # prompts you to enter the value on first deploy
+
+      # Frontend origin(s) for CORS — set this to your Vercel URL once deployed.
+      # Comma-separated if multiple.  e.g. "https://ai-resume-parser.vercel.app"
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+    # ── Health Check ───────────────────────────────────────────────────────
+    healthCheckPath: /health
