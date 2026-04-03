@@ -17,13 +17,14 @@ An AI-powered fullstack web application that parses resume files (PDF or DOCX) a
 
 ## 🗂️ Tech Stack
 
-| Layer     | Technology                                               |
-|-----------|----------------------------------------------------------|
-| Frontend  | React 18, Vite, Tailwind CSS 3, Axios                    |
-| Backend   | Python 3.10+, FastAPI, Uvicorn                           |
-| AI        | Google Gemini 1.5 Flash (`google-generativeai`)          |
-| PDF parse | `pdfplumber`                                             |
-| DOCX parse| `python-docx`                                            |
+| Layer      | Technology                                              |
+|------------|---------------------------------------------------------|
+| Frontend   | React 18, Vite, Tailwind CSS 3, Axios                   |
+| Backend    | Python 3.10+, FastAPI, Uvicorn                          |
+| AI         | Google Gemini 1.5 Flash (`google-generativeai`)         |
+| PDF parse  | `pdfplumber`                                            |
+| DOCX parse | `python-docx`                                           |
+| Hosting    | **Vercel** (frontend) · **Render** (backend)            |
 
 ## 📁 Project Structure
 
@@ -41,6 +42,8 @@ resume-parser/
 │   │   ├── main.jsx
 │   │   └── index.css
 │   ├── index.html
+│   ├── vercel.json          ← Vercel deployment config
+│   ├── .env.example         ← documents VITE_API_URL
 │   ├── tailwind.config.js
 │   ├── postcss.config.js
 │   ├── vite.config.js
@@ -56,6 +59,7 @@ resume-parser/
 │   ├── .gitignore
 │   └── requirements.txt
 │
+├── render.yaml              ← Render deployment blueprint
 ├── .gitignore
 └── README.md
 ```
@@ -153,16 +157,79 @@ Returns `{"status": "ok"}` when the server is running.
 - `400` — Unsupported file type, empty file, or unreadable content
 - `500` — Gemini API failure or parsing error
 
+## ☁️ Production Deployment
+
+### Architecture
+
+```
+┌─────────────┐         ┌──────────────┐         ┌────────────┐
+│   Browser   │──HTTPS──▶   Vercel     │         │  Google AI │
+│   (User)    │         │  (Frontend)  │         │  (Gemini)  │
+└─────────────┘         └──────┬───────┘         └─────▲──────┘
+                               │ API calls              │
+                               ▼                        │
+                        ┌──────────────┐                │
+                        │   Render     │────────────────┘
+                        │  (Backend)   │
+                        └──────────────┘
+```
+
+### Frontend → Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new) and import your GitHub repo.
+2. Configure the project:
+
+   | Setting              | Value           |
+   |----------------------|-----------------|
+   | **Framework Preset** | Vite            |
+   | **Root Directory**   | `frontend`      |
+   | **Build Command**    | `npm run build` |
+   | **Output Directory** | `dist`          |
+
+3. Add the environment variable:
+
+   | Key            | Value                                            |
+   |----------------|--------------------------------------------------|
+   | `VITE_API_URL` | Your Render backend URL (e.g. `https://ai-resumer-parser-app.onrender.com`) |
+
+   > ⚠️ **No trailing slash** — use `https://…onrender.com` not `https://…onrender.com/`
+
+4. Click **Deploy**.
+
+### Backend → Render
+
+The backend deploys via the `render.yaml` blueprint (Infrastructure as Code).
+
+1. Go to [dashboard.render.com](https://dashboard.render.com) → **Blueprints** → **New Blueprint Instance**.
+2. Connect your GitHub repo — Render reads `render.yaml` automatically.
+3. Set the environment variables when prompted:
+
+   | Key               | Value                                                   |
+   |-------------------|---------------------------------------------------------|
+   | `GEMINI_API_KEY`  | Your Google AI API key                                  |
+   | `ALLOWED_ORIGINS` | Your Vercel URL (e.g. `https://ai-resume-parser.vercel.app`) |
+
+### Auto-Deploys
+
+Both platforms auto-deploy when you push to `main`:
+- **Vercel** rebuilds and redeploys the frontend
+- **Render** rebuilds and redeploys the backend
+
+### Environment Variables Summary
+
+| Platform | Variable           | Where to set                     | Purpose                            |
+|----------|--------------------|----------------------------------|------------------------------------|
+| Vercel   | `VITE_API_URL`     | Vercel → Settings → Env Vars     | Backend API URL for the frontend   |
+| Render   | `GEMINI_API_KEY`   | Render Dashboard → Environment   | Google Gemini API authentication   |
+| Render   | `ALLOWED_ORIGINS`  | Render Dashboard → Environment   | CORS — whitelist your Vercel URL   |
+
 ## 🛡️ Security Notes
 
-- The `GEMINI_API_KEY` is stored in `backend/.env` and **never** exposed to the frontend
-- The `.env` file is included in `.gitignore` — never commit it
-- Use `.env.example` as a template for onboarding new developers
+- The `GEMINI_API_KEY` is stored in `backend/.env` (locally) and in Render's environment (production) — **never** exposed to the frontend
+- All `.env` files are included in `.gitignore` — never commit them
+- `VITE_API_URL` is safe to expose (it's just the public backend URL)
+- Use `.env.example` files as templates for onboarding new developers
 
 ## 📝 License
 
 MIT
-
-
-render.yaml 
-infrastructure as code.

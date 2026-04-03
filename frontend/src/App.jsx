@@ -5,6 +5,10 @@ import Navbar from './components/Navbar'
 import DashboardPage from './pages/DashboardPage'
 import StrengthDeepDivePage from './pages/StrengthDeepDivePage'
 
+// In production (Vercel), VITE_API_URL points to the Render backend.
+// In local dev, it falls back to '' so the Vite proxy handles /api/* calls.
+const API_BASE = import.meta.env.VITE_API_URL || ''
+
 export default function App() {
   const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
   const [insights, setInsights] = useState(null)
@@ -19,7 +23,7 @@ export default function App() {
     formData.append('file', file)
 
     try {
-      const response = await axios.post('/api/parse-resume', formData, {
+      const response = await axios.post(`${API_BASE}/api/parse-resume`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 60000,
       })
